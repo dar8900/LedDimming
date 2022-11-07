@@ -1,5 +1,15 @@
 #include "led_dimming.h"
 
+void LedDimming::_writeDebugMsg(String Msg)
+{
+#ifdef DEBUG_TIME
+	if(Msg)
+	{
+		Serial.println(Msg);
+	}
+#endif	
+}
+
 uint16_t LedDimming::_percToAnalogWrite(uint8_t Perc)
 {
 	return ((Perc * _pwmRange) / 100);
@@ -32,6 +42,7 @@ void LedDimming::setDimmingTime(uint16_t Time)
 		if(_dimmingTime != NO_DIMMING)
 		{
 			_brightnessIncrement = _pwmRange / (_dimmingTime / _DIMMING_CYCLE);
+			_writeDebugMsg("_brightnessIncrement = " + String(_brightnessIncrement));
 		}
 	}
 }
@@ -118,6 +129,7 @@ void LedDimming::ledStripeEngine()
 						_actualStatus = _targetStatus;
 						_actualBrightness = 0;
 						_stripeIsSwitching = false;
+						_writeDebugMsg("Led dimming OFF");
 					}
 				}
 				else
@@ -132,6 +144,7 @@ void LedDimming::ledStripeEngine()
 						_actualStatus = _targetStatus;
 						_actualBrightness = _brightnessTarget;
 						_stripeIsSwitching = false;
+						_writeDebugMsg("Led dimming ON");
 					}
 				}
 				analogWrite(_pin, _actualBrightness);

@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include <stdint.h>
 
+#define DEBUG_TIME
+
 #define NO_DIMMING			0
 
 class LedDimming
@@ -39,6 +41,7 @@ class LedDimming
 		 * @return uint16_t analogVal
 		 */
 		uint16_t _percToAnalogWrite(uint8_t Perc);
+		void _writeDebugMsg(String Msg);	
 
 	public:
 		const uint8_t MAX_BRIGHTNESS = 100; // Massima luminosità percentuale
