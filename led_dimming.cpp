@@ -1,12 +1,12 @@
 #include "led_stripes.h"
 #include "../SerialDebug/serial_debug.h"
 
-uint16_t LedStripe::_percToAnalogWrite(uint8_t Perc)
+uint16_t LedDimming::_percToAnalogWrite(uint8_t Perc)
 {
 	return ((Perc * _pwmRange) / 100);
 }
 
-LedStripe::LedStripe(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPerc, const char *LedStripeName)
+LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPerc, const char *LedStripeName)
 {
 	_pin = Pin;
 	pinMode(_pin, OUTPUT);
@@ -24,7 +24,7 @@ LedStripe::LedStripe(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPerc
 	setDimmingTime(NO_DIMMING);
 }
 
-void LedStripe::setDimmingTime(uint16_t Time)
+void LedDimming::setDimmingTime(uint16_t Time)
 {
 	if((Time <= _pwmRange * _DIMMING_CYCLE && Time >= _DIMMING_CYCLE) || 
 		Time == NO_DIMMING)
@@ -41,7 +41,7 @@ void LedStripe::setDimmingTime(uint16_t Time)
 	}
 }
 
-void LedStripe::setStatus(stripe_status NewStatus, bool Fast)
+void LedDimming::setStatus(stripe_status NewStatus, bool Fast)
 {
 	if(NewStatus != _targetStatus || Fast)
 	{
@@ -72,17 +72,17 @@ void LedStripe::setStatus(stripe_status NewStatus, bool Fast)
 	}
 }
 
-LedStripe::stripe_status LedStripe::getStatus()
+LedDimming::stripe_status LedDimming::getStatus()
 {
 	return _actualStatus;
 }
 
-bool LedStripe::ledSwitching()
+bool LedDimming::ledSwitching()
 {
 	return _stripeIsSwitching;
 }
 
-void LedStripe::setBrightness(uint8_t NewBrightnessPerc)
+void LedDimming::setBrightness(uint8_t NewBrightnessPerc)
 {
 	uint16_t AnalogBright = _percToAnalogWrite(NewBrightnessPerc);
 	if(AnalogBright != _brightnessTarget && NewBrightnessPerc <= MAX_BRIGHTNESS)
@@ -96,7 +96,7 @@ void LedStripe::setBrightness(uint8_t NewBrightnessPerc)
 	}
 }
 
-void LedStripe::ledStripeEngine()
+void LedDimming::ledStripeEngine()
 {
 	if(_engineTimer == 0)
 	{

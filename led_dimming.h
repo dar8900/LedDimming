@@ -5,7 +5,7 @@
 
 #define NO_DIMMING			0
 
-class LedStripe
+class LedDimming
 {
 	public:
 		typedef enum
@@ -43,7 +43,7 @@ class LedStripe
 	public:
 		const uint8_t MAX_BRIGHTNESS = 100; // Massima luminosità percentuale
 
-		LedStripe(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPercent, const char *LedStripeName = NULL);
+		LedDimming(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPercent, const char *LedStripeName = NULL);
 		/**
 		 * @brief Imposta il tempo di dimming tra accensione e spegnimento (in ms)
 		 * 
