@@ -33,6 +33,14 @@ LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPe
 	setDimmingTime(NO_DIMMING);
 }
 
+void LedDimming::setEngineCycle(uint16_t NewCyleTime)
+{
+	if(NewCyleTime > 0)
+	{
+		_DIMMING_CYCLE = NewCyleTime;
+	}
+}
+
 void LedDimming::setDimmingTime(uint16_t Time)
 {
 	if((Time <= _pwmRange * _DIMMING_CYCLE && Time >= _DIMMING_CYCLE) || 
