@@ -46,14 +46,12 @@ void LedDimming::setStatus(stripe_status NewStatus, bool Fast)
 			{
 				analogWrite(_pin, 0);
 				_actualBrightness = 0;
-				Debug.logInfo("Striscia spenta in Fast mode");
 				_actualStatus = off_status;
 			}
 			else
 			{
 				analogWrite(_pin, _brightnessTarget);
 				_actualBrightness = _brightnessTarget;
-				Debug.logInfo("Striscia accesa in Fast mode");
 				_actualStatus = on_status;
 			}
 			_stripeIsSwitching = false;
