@@ -158,5 +158,15 @@ void LedDimming::ledStripeEngine()
 				analogWrite(_pin, _actualBrightness);
 			}
 		}
+		if(_oldBrightnessTarget != _brightnessTarget)
+		{
+			analogWrite(_pin, _brightnessTarget);
+			_oldBrightnessTarget = _brightnessTarget;
+			if(_brightnessTarget > 0)
+			{
+				_actualBrightness = _brightnessTarget;
+				_actualStatus = on_status;
+			}
+		}
 	}
 }

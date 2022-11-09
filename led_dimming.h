@@ -21,6 +21,7 @@ class LedDimming
 		char *_ledStripeName = NULL;
 		int8_t _pin = -1;
 		uint16_t _brightnessTarget = 0;
+		uint16_t _oldBrightnessTarget = 0;
 		uint16_t _actualBrightness = 0;
 		uint16_t _brightnessIncrement = 0;
 		uint16_t _dimmingTime = 0;
