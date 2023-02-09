@@ -25,6 +25,11 @@ LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPe
 	analogWriteRange(_pwmRange);
 	analogWriteFreq(_pwmFrq);
 #endif
+#ifdef ESP32
+	analogWriteRange(_pwmRange);
+	analogWriteFreq(_pwmFrq);
+#endif
+	_engineTimer = millis();
 	_engineTimer = millis();
 	if(LedStripeName)
 	{
@@ -55,7 +60,7 @@ void LedDimming::setDimmingTime(uint16_t Time)
 	}
 }
 
-	void LedDimming::toggleStatus(bool Fast = false)
+	void LedDimming::toggleStatus(bool Fast)
 	{
 		if(!_stripeIsSwitching && _targetStatus == _actualStatus){
 			if(_targetStatus == on_status){
