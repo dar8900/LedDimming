@@ -55,28 +55,36 @@ void LedDimming::setDimmingTime(uint16_t Time)
 	}
 }
 
+	void LedDimming::toggleStatus(bool Fast = false)
+	{
+		if(!_stripeIsSwitching && _targetStatus == _actualStatus){
+			if(_targetStatus == on_status){
+				setStatus(off_status, Fast);
+			} else {
+				setStatus(on_status, Fast);
+			}
+		}
+	}
+
 void LedDimming::setStatus(stripe_status NewStatus, bool Fast)
 {
-	if(NewStatus != _targetStatus || Fast)
+	if(Fast)
 	{
-		if(Fast)
+		if(NewStatus == off_status)
 		{
-			if(NewStatus == off_status)
-			{
-				analogWrite(_pin, 0);
-				_actualBrightness = 0;
-				_actualStatus = off_status;
-			}
-			else
-			{
-				analogWrite(_pin, _brightnessTarget);
-				_actualBrightness = _brightnessTarget;
-				_actualStatus = on_status;
-			}
-			_stripeIsSwitching = false;
+			analogWrite(_pin, 0);
+			_actualBrightness = 0;
+			_actualStatus = off_status;
 		}
-		_targetStatus = NewStatus;
+		else
+		{
+			analogWrite(_pin, _brightnessTarget);
+			_actualBrightness = _brightnessTarget;
+			_actualStatus = on_status;
+		}
+		_stripeIsSwitching = false;
 	}
+	_targetStatus = NewStatus;
 }
 
 LedDimming::stripe_status LedDimming::getStatus()

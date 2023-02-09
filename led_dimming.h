@@ -69,6 +69,13 @@ class LedDimming
 		void setStatus(stripe_status NewStatus, bool Fast = false);
 
 		/**
+		 * @brief Inverte lo stato del led se non sta dimmerando
+		 * 
+		 * @param bool Fast 
+		 */
+		void toggleStatus(bool Fast = false);
+
+		/**
 		 * @brief Restituisce lo stato attuale della striscia
 		 * 
 		 * @return stripe_status ActualStatus 
