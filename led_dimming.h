@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-#define DEBUG_TIME
+// #define DEBUG_TIME
 
 #define NO_DIMMING			0
 

@@ -3,8 +3,12 @@
 void LedDimming::_writeDebugMsg(String Msg)
 {
 #ifdef DEBUG_TIME
-	if(Msg)
+	if(Msg != "")
 	{
+		if(_ledStripeName){
+			Serial.print(_ledStripeName);
+			Serial.print("\t");
+		}
 		Serial.println(Msg);
 	}
 #endif	
@@ -35,7 +39,6 @@ LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPe
 	{
 		_ledStripeName = const_cast<char*>(LedStripeName);
 	}
-	setDimmingTime(NO_DIMMING);
 }
 
 void LedDimming::setEngineCycle(uint16_t NewCyleTime)
@@ -60,16 +63,17 @@ void LedDimming::setDimmingTime(uint16_t Time)
 	}
 }
 
-	void LedDimming::toggleStatus(bool Fast)
-	{
-		if(!_stripeIsSwitching && _targetStatus == _actualStatus){
-			if(_targetStatus == on_status){
-				setStatus(off_status, Fast);
-			} else {
-				setStatus(on_status, Fast);
-			}
+void LedDimming::toggleStatus(bool Fast)
+{
+	if(!_stripeIsSwitching && _targetStatus == _actualStatus){
+		_writeDebugMsg("Toggle status");
+		if(_targetStatus == on_status){
+			setStatus(off_status, Fast);
+		} else {
+			setStatus(on_status, Fast);
 		}
 	}
+}
 
 void LedDimming::setStatus(stripe_status NewStatus, bool Fast)
 {
@@ -122,6 +126,7 @@ void LedDimming::ledStripeEngine()
 		_engineTimer = 0;
 		if(_actualStatus != _targetStatus)
 		{
+			// _writeDebugMsg("Actual not Target");
 			if(_dimmingTime == NO_DIMMING)
 			{
 				if(_targetStatus == off_status)
@@ -144,6 +149,7 @@ void LedDimming::ledStripeEngine()
 					{
 						_actualBrightness -= _brightnessIncrement;
 						_stripeIsSwitching = true;
+						// _writeDebugMsg("Dimming to OFF");
 					}
 					else
 					{
@@ -159,6 +165,7 @@ void LedDimming::ledStripeEngine()
 					{
 						_actualBrightness += _brightnessIncrement;
 						_stripeIsSwitching = true;
+						// _writeDebugMsg("Dimming to ON");
 					}
 					else
 					{
@@ -179,6 +186,7 @@ void LedDimming::ledStripeEngine()
 			{
 				_actualBrightness = _brightnessTarget;
 				_actualStatus = on_status;
+				_stripeIsSwitching = false;
 			}
 		}
 	}
