@@ -34,9 +34,7 @@ LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPe
 	analogWriteFreq(_pwmFrq);
 #endif
 	_engineTimer = millis();
-	_engineTimer = millis();
-	if(LedStripeName)
-	{
+	if(LedStripeName){
 		_ledStripeName = const_cast<char*>(LedStripeName);
 	}
 }
@@ -106,12 +104,20 @@ bool LedDimming::ledSwitching()
 	return _stripeIsSwitching;
 }
 
-void LedDimming::setBrightness(uint8_t NewBrightnessPerc)
+void LedDimming::setBrightness(uint8_t NewBrightnessPerc, bool Fast)
 {
 	uint16_t AnalogBright = _percToAnalogWrite(NewBrightnessPerc);
 	if(AnalogBright != _brightnessTarget && NewBrightnessPerc <= MAX_BRIGHTNESS)
 	{
 		_brightnessTarget = AnalogBright;
+		if(Fast)
+		{
+			if(NewBrightnessPerc == 0){
+				setStatus(off_status, Fast);
+			} else {
+				setStatus(on_status, Fast);
+			}
+		}
 	}
 }
 
@@ -126,20 +132,9 @@ void LedDimming::ledStripeEngine()
 		_engineTimer = 0;
 		if(_actualStatus != _targetStatus)
 		{
-			// _writeDebugMsg("Actual not Target");
 			if(_dimmingTime == NO_DIMMING)
 			{
-				if(_targetStatus == off_status)
-				{
-					analogWrite(_pin, 0);
-					_actualBrightness = 0;
-				}
-				else
-				{
-					analogWrite(_pin, _brightnessTarget);
-					_actualBrightness = _brightnessTarget;
-				}
-				_actualStatus = _targetStatus;
+				setStatus(_targetStatus, true);
 			}
 			else
 			{
@@ -149,7 +144,7 @@ void LedDimming::ledStripeEngine()
 					{
 						_actualBrightness -= _brightnessIncrement;
 						_stripeIsSwitching = true;
-						// _writeDebugMsg("Dimming to OFF");
+						_writeDebugMsg("Dimming to OFF");
 					}
 					else
 					{
@@ -165,7 +160,7 @@ void LedDimming::ledStripeEngine()
 					{
 						_actualBrightness += _brightnessIncrement;
 						_stripeIsSwitching = true;
-						// _writeDebugMsg("Dimming to ON");
+						_writeDebugMsg("Dimming to ON");
 					}
 					else
 					{
@@ -176,17 +171,6 @@ void LedDimming::ledStripeEngine()
 					}
 				}
 				analogWrite(_pin, _actualBrightness);
-			}
-		}
-		if(_oldBrightnessTarget != _brightnessTarget)
-		{
-			analogWrite(_pin, _brightnessTarget);
-			_oldBrightnessTarget = _brightnessTarget;
-			if(_brightnessTarget > 0)
-			{
-				_actualBrightness = _brightnessTarget;
-				_actualStatus = on_status;
-				_stripeIsSwitching = false;
 			}
 		}
 	}

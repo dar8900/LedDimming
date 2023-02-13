@@ -93,8 +93,9 @@ class LedDimming
 		 * @brief Imposta la massima luminostà da raggiungere in percentuale
 		 * 
 		 * @param uint8_t NewBrightness 
+		 * @param bool Fast
 		 */
-		void setBrightness(uint8_t NewBrightnessPercent);
+		void setBrightness(uint8_t NewBrightnessPercent, bool Fast = false);
 
 		/**
 		 * @brief Esegue il motore per la gestione del dimming e del cambio stato
