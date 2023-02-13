@@ -25,8 +25,6 @@ class LedDimming
 		uint16_t _actualBrightness = 0;
 		uint16_t _brightnessIncrement = 0;
 		uint16_t _dimmingTime = 0;
-		stripe_status _actualStatus = off_status;
-		stripe_status _targetStatus = off_status;
 		uint32_t _engineTimer;
 		bool _stripeIsSwitching = false;
 #ifdef ESP8266

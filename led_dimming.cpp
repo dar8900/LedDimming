@@ -63,9 +63,9 @@ void LedDimming::setDimmingTime(uint16_t Time)
 
 void LedDimming::toggleStatus(bool Fast)
 {
-	if(!_stripeIsSwitching && _targetStatus == _actualStatus){
+	if(!_stripeIsSwitching && _brightnessTarget == _actualBrightness){
 		_writeDebugMsg("Toggle status");
-		if(_targetStatus == on_status){
+		if(_brightnessTarget > 0){
 			setStatus(off_status, Fast);
 		} else {
 			setStatus(on_status, Fast);
@@ -75,28 +75,26 @@ void LedDimming::toggleStatus(bool Fast)
 
 void LedDimming::setStatus(stripe_status NewStatus, bool Fast)
 {
+	if(NewStatus == off_status)
+	{
+		_actualBrightness = 0;
+	}
+	else
+	{
+		_actualBrightness = _brightnessTarget;
+	}
 	if(Fast)
 	{
-		if(NewStatus == off_status)
-		{
-			analogWrite(_pin, 0);
-			_actualBrightness = 0;
-			_actualStatus = off_status;
-		}
-		else
-		{
-			analogWrite(_pin, _brightnessTarget);
-			_actualBrightness = _brightnessTarget;
-			_actualStatus = on_status;
-		}
+		analogWrite(_pin, _actualBrightness);
+		_brightnessTarget = _actualBrightness;
 		_stripeIsSwitching = false;
 	}
-	_targetStatus = NewStatus;
+
 }
 
 LedDimming::stripe_status LedDimming::getStatus()
 {
-	return _actualStatus;
+	return _actualBrightness > 0 ? on_status : off_status;
 }
 
 bool LedDimming::ledSwitching()
@@ -130,44 +128,41 @@ void LedDimming::ledStripeEngine()
 	if(millis() - _engineTimer >= _DIMMING_CYCLE)
 	{
 		_engineTimer = 0;
-		if(_actualStatus != _targetStatus)
+		int16_t BrightnessDelta = _actualBrightness - _brightnessTarget;
+		if(BrightnessDelta != 0)
 		{
 			if(_dimmingTime == NO_DIMMING)
 			{
-				setStatus(_targetStatus, true);
+				setStatus(getStatus(), true);
 			}
 			else
 			{
-				if(_targetStatus == off_status)
+				if(BrightnessDelta > 0)
 				{
-					if(_actualBrightness - _brightnessIncrement > 0)
+					if(BrightnessDelta > _brightnessIncrement)
 					{
 						_actualBrightness -= _brightnessIncrement;
 						_stripeIsSwitching = true;
-						_writeDebugMsg("Dimming to OFF");
+						_writeDebugMsg("Brightness DECREMENT");
 					}
 					else
 					{
-						_actualStatus = _targetStatus;
-						_actualBrightness = 0;
+						_actualBrightness = _brightnessTarget;
 						_stripeIsSwitching = false;
-						_writeDebugMsg("Led dimming OFF");
 					}
 				}
 				else
 				{
-					if(_actualBrightness + _brightnessIncrement < _brightnessTarget)
+					if(BrightnessDelta < (-1 * _brightnessIncrement))
 					{
 						_actualBrightness += _brightnessIncrement;
 						_stripeIsSwitching = true;
-						_writeDebugMsg("Dimming to ON");
+						_writeDebugMsg("Brightness INCREMENT");
 					}
 					else
 					{
-						_actualStatus = _targetStatus;
 						_actualBrightness = _brightnessTarget;
 						_stripeIsSwitching = false;
-						_writeDebugMsg("Led dimming ON");
 					}
 				}
 				analogWrite(_pin, _actualBrightness);
