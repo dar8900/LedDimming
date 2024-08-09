@@ -19,25 +19,91 @@ uint16_t LedDimming::_percToAnalogWrite(uint8_t Perc)
 	return ((Perc * _pwmRange) / 100);
 }
 
+#if defined(ESP8266)
+int calcResolution(int Range) {
+    int res = 0;
+
+    // Trova il massimo res tale che 2^res <= Range
+    while ((1 << (res + 1)) <= Range) {
+        res++;
+    }
+
+    int potenzaBassa = 1 << res;      // 2^res
+    int potenzaAlta = 1 << (res + 1); // 2^(res + 1)
+
+    // Determina quale delle due potenze è più vicina al Range
+    if ((Range - potenzaBassa) <= (potenzaAlta - Range)) {
+        return res;
+    } else {
+        return res + 1;
+    }
+}
+
+LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint16_t MaxRange, uint16_t MaxFrq, uint8_t MaxBrightnessPercent, const char *LedStripeName)
+{
+	_pin = Pin;
+	_pwmRange = MaxRange;
+	_pmwFrq = MaxFrq;
+	_pmwResolution = calcResolution(_pwmRange);
+	pinMode(_pin, OUTPUT);
+	setDimmingTime(DimmingTime);
+	setBrightness(MaxBrightnessPerc);
+	analogWriteResolution(_pmwResolution);
+	analogWriteFreq(_pwmFrq);
+	_engineTimer = millis();
+	if(LedStripeName){
+		_ledStripeName = const_cast<char*>(LedStripeName);
+	}
+}
+#elif defined(ESP32)
+int calcResolution(int Range) {
+    int res = 0;
+
+    // Trova il massimo res tale che 2^res <= Range
+    while ((1 << (res + 1)) <= Range) {
+        res++;
+    }
+
+    int potenzaBassa = 1 << res;      // 2^res
+    int potenzaAlta = 1 << (res + 1); // 2^(res + 1)
+
+    // Determina quale delle due potenze è più vicina al Range
+    if ((Range - potenzaBassa) <= (potenzaAlta - Range)) {
+        return res;
+    } else {
+        return res + 1;
+    }
+}
+
+LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint16_t MaxRange, uint16_t MaxFrq,  uint8_t MaxBrightnessPercent, const char *LedStripeName)
+{
+	_pin = Pin;
+	_pwmRange = MaxRange;
+	_pmwFrq = MaxFrq;
+	_pmwResolution = calcResolution(_pwmRange);
+	pinMode(_pin, OUTPUT);
+	setDimmingTime(DimmingTime);
+	setBrightness(MaxBrightnessPerc);
+	analogWriteResolution(_pmwResolution);
+	analogWriteFreq(_pwmFrq);
+	_engineTimer = millis();
+	if(LedStripeName){
+		_ledStripeName = const_cast<char*>(LedStripeName);
+	}
+}
+#else
 LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPerc, const char *LedStripeName)
 {
 	_pin = Pin;
 	pinMode(_pin, OUTPUT);
 	setDimmingTime(DimmingTime);
 	setBrightness(MaxBrightnessPerc);
-#ifdef ESP8266
-	analogWriteRange(_pwmRange);
-	analogWriteFreq(_pwmFrq);
-#endif
-#ifdef ESP32
-	analogWriteRange(_pwmRange);
-	analogWriteFreq(_pwmFrq);
-#endif
 	_engineTimer = millis();
 	if(LedStripeName){
 		_ledStripeName = const_cast<char*>(LedStripeName);
 	}
 }
+#endif
 
 void LedDimming::setEngineCycle(uint16_t NewCyleTime)
 {
@@ -83,7 +149,7 @@ void LedDimming::setStatus(stripe_status NewStatus, bool Fast)
 	{
 		_actualBrightness = _brightnessTarget;
 	}
-	if(Fast)
+	if(Fast == FAST_SWITCH_ENABLED)
 	{
 		analogWrite(_pin, _actualBrightness);
 		_brightnessTarget = _actualBrightness;
@@ -133,7 +199,7 @@ void LedDimming::ledStripeEngine()
 		{
 			if(_dimmingTime == NO_DIMMING)
 			{
-				setStatus(getStatus(), true);
+				setStatus(getStatus(), FAST_SWITCH_ENABLED);
 			}
 			else
 			{

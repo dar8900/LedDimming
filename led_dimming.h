@@ -5,7 +5,9 @@
 
 // #define DEBUG_TIME
 
-#define NO_DIMMING			0
+#define NO_DIMMING				0
+#define FAST_SWITCH_ENABLED		true
+#define FAST_SWITCH_DISABLED	false
 
 class LedDimming
 {
@@ -27,11 +29,16 @@ class LedDimming
 		uint16_t _dimmingTime = 0;
 		uint32_t _engineTimer;
 		bool _stripeIsSwitching = false;
-#ifdef ESP8266
-		const uint16_t _pwmRange = 1023;
-		const uint16_t _pwmFrq = 5000;
+#if defined(ESP8266)
+	uint8_t _pwmResolution = 8;
+    uint16_t _pwmRange = 1023;
+    uint16_t _pwmFrq = 5000;
+#elif defined(ESP32)
+	uint8_t _pwmResolution = 8;
+    uint16_t _pwmRange = 1023;
+    uint16_t _pwmFrq = 5000;
 #else
-		const uint16_t _pwmRange = 255;
+    const uint16_t _pwmRange = 255;
 #endif
 		/**
 		 * @brief Funzione per la conversione da percentuale a valore analogico
@@ -45,8 +52,13 @@ class LedDimming
 	public:
 		const uint8_t MAX_BRIGHTNESS = 100; // Massima luminosità percentuale
 
-		LedDimming(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPercent, const char *LedStripeName = NULL);
-
+#if defined(ESP8266)
+		LedDimming(int8_t Pin, uint16_t DimmingTime, uint16_t MaxRange = 255, uint16_t MaxFrq = 1000, uint8_t MaxBrightnessPercent = 100, const char *LedStripeName = NULL);
+#elif defined(ESP32)
+		LedDimming(int8_t Pin, uint16_t DimmingTime, uint16_t MaxRange = 255, uint16_t MaxFrq = 1000,  uint8_t MaxBrightnessPercent = 100, const char *LedStripeName = NULL);
+#else
+		LedDimming(int8_t Pin, uint16_t DimmingTime, uint8_t MaxBrightnessPercent = 100, const char *LedStripeName = NULL);
+#endif
 		void setEngineCycle(uint16_t NewCyleTime);
 
 		/**
@@ -64,14 +76,14 @@ class LedDimming
 		 * @param stripe_status NewStatus 
 		 * @param bool Fast 
 		 */
-		void setStatus(stripe_status NewStatus, bool Fast = false);
+		void setStatus(stripe_status NewStatus, bool Fast = FAST_SWITCH_DISABLED);
 
 		/**
 		 * @brief Inverte lo stato del led se non sta dimmerando
 		 * 
 		 * @param bool Fast 
 		 */
-		void toggleStatus(bool Fast = false);
+		void toggleStatus(bool Fast = FAST_SWITCH_DISABLED);
 
 		/**
 		 * @brief Restituisce lo stato attuale della striscia
@@ -93,13 +105,19 @@ class LedDimming
 		 * @param uint8_t NewBrightness 
 		 * @param bool Fast
 		 */
-		void setBrightness(uint8_t NewBrightnessPercent, bool Fast = false);
+		void setBrightness(uint8_t NewBrightnessPercent, bool Fast = FAST_SWITCH_DISABLED);
 
 		/**
 		 * @brief Esegue il motore per la gestione del dimming e del cambio stato
 		 * 
 		 */
 		void ledStripeEngine();
+
+#if defined(ESP8266)
+		void setPwmRange(uint16_t NewRange);
+#elif defined(ESP32)
+		void setPwmRange(uint16_t NewRange);
+#endif
 
 };
 
