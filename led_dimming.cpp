@@ -85,7 +85,7 @@ LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint16_t MaxRange, uint
 	pinMode(_pin, OUTPUT);
 	setDimmingTime(DimmingTime);
 	setBrightness(MaxBrightnessPercent);
-	analogWriteResolution(_pmwResolution);
+	analogWriteResolution(_pwmResolution);
 	analogWriteFrequency(_pwmFrq);
 	_engineTimer = millis();
 	if(LedStripeName){
