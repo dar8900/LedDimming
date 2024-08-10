@@ -185,6 +185,40 @@ void LedDimming::setBrightness(uint8_t NewBrightnessPerc, bool Fast)
 	}
 }
 
+#if defined(ESP8266)
+void LedDimming::setPwmRange(uint16_t NewRange)
+{
+	_pwmRange = NewRange;
+	_pmwResolution = calcResolution(_pwmRange);
+	analogWriteResolution(_pmwResolution);
+	setDimmingTime(_dimmingTime);
+}
+
+void LedDimming::setPwmFrq(uint16_t NewFrq)
+{
+	if(_pwmFrq != NewFrq){
+		_pwmFrq = NewFrq;
+		analogWriteFreq(_pwmFrq);
+	}
+}
+#elif defined(ESP32)
+void LedDimming::setPwmRange(uint16_t NewRange)
+{
+	_pwmRange = NewRange;
+	_pmwResolution = calcResolution(_pwmRange);
+	analogWriteResolution(_pmwResolution);
+	setDimmingTime(_dimmingTime);
+}
+
+void LedDimming::setPwmFrq(uint16_t NewFrq)
+{
+	if(_pwmFrq != NewFrq){
+		_pwmFrq = NewFrq;
+		analogWriteFreq(_pwmFrq);
+	}
+}
+#endif
+
 void LedDimming::ledStripeEngine()
 {
 	if(_engineTimer == 0)
@@ -197,8 +231,7 @@ void LedDimming::ledStripeEngine()
 		int16_t BrightnessDelta = _actualBrightness - _brightnessTarget;
 		if(BrightnessDelta != 0)
 		{
-			if(_dimmingTime == NO_DIMMING)
-			{
+			if(_dimmingTime == NO_DIMMING){
 				setStatus(getStatus(), FAST_SWITCH_ENABLED);
 			}
 			else

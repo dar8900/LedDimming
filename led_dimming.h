@@ -115,8 +115,10 @@ class LedDimming
 
 #if defined(ESP8266)
 		void setPwmRange(uint16_t NewRange);
+		void setPwmFrq(uint16_t NewFrq);
 #elif defined(ESP32)
 		void setPwmRange(uint16_t NewRange);
+		void setPwmFrq(uint16_t NewFrq);
 #endif
 
 };
