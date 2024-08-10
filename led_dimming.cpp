@@ -1,5 +1,6 @@
 #include "led_dimming.h"
 
+
 void LedDimming::_writeDebugMsg(String Msg)
 {
 #ifdef DEBUG_TIME
@@ -43,13 +44,13 @@ LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint16_t MaxRange, uint
 {
 	_pin = Pin;
 	_pwmRange = MaxRange;
-	_pmwFrq = MaxFrq;
-	_pmwResolution = calcResolution(_pwmRange);
+	_pwmFrq = MaxFrq;
+	_pwmResolution = calcResolution(_pwmRange);
 	pinMode(_pin, OUTPUT);
 	setDimmingTime(DimmingTime);
-	setBrightness(MaxBrightnessPerc);
+	setBrightness(MaxBrightnessPercent);
 	analogWriteResolution(_pmwResolution);
-	analogWriteFreq(_pwmFrq);
+	analogWriteFrequency(_pwmFrq);
 	_engineTimer = millis();
 	if(LedStripeName){
 		_ledStripeName = const_cast<char*>(LedStripeName);
@@ -79,13 +80,13 @@ LedDimming::LedDimming(int8_t Pin, uint16_t DimmingTime, uint16_t MaxRange, uint
 {
 	_pin = Pin;
 	_pwmRange = MaxRange;
-	_pmwFrq = MaxFrq;
-	_pmwResolution = calcResolution(_pwmRange);
+	_pwmFrq = MaxFrq;
+	_pwmResolution = calcResolution(_pwmRange);
 	pinMode(_pin, OUTPUT);
 	setDimmingTime(DimmingTime);
-	setBrightness(MaxBrightnessPerc);
+	setBrightness(MaxBrightnessPercent);
 	analogWriteResolution(_pmwResolution);
-	analogWriteFreq(_pwmFrq);
+	analogWriteFrequency(_pwmFrq);
 	_engineTimer = millis();
 	if(LedStripeName){
 		_ledStripeName = const_cast<char*>(LedStripeName);
@@ -198,15 +199,15 @@ void LedDimming::setPwmFrq(uint16_t NewFrq)
 {
 	if(_pwmFrq != NewFrq){
 		_pwmFrq = NewFrq;
-		analogWriteFreq(_pwmFrq);
+		analogWriteFrequency(_pwmFrq);
 	}
 }
 #elif defined(ESP32)
 void LedDimming::setPwmRange(uint16_t NewRange)
 {
 	_pwmRange = NewRange;
-	_pmwResolution = calcResolution(_pwmRange);
-	analogWriteResolution(_pmwResolution);
+	_pwmResolution = calcResolution(_pwmRange);
+	analogWriteResolution(_pwmResolution);
 	setDimmingTime(_dimmingTime);
 }
 
@@ -214,7 +215,7 @@ void LedDimming::setPwmFrq(uint16_t NewFrq)
 {
 	if(_pwmFrq != NewFrq){
 		_pwmFrq = NewFrq;
-		analogWriteFreq(_pwmFrq);
+		analogWriteFrequency(_pwmFrq);
 	}
 }
 #endif
