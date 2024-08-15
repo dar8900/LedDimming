@@ -3,11 +3,10 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-// #define DEBUG_TIME
+#define DEBUG_TIME
 
-#define NO_DIMMING				0
-#define FAST_SWITCH_ENABLED		true
-#define FAST_SWITCH_DISABLED	false
+#define TOGGLE_ENABLED			true
+#define TOGGLE_DISABLED			!TOGGLE_ENABLED
 
 class LedDimming
 {
@@ -23,12 +22,13 @@ class LedDimming
 		char *_ledStripeName = NULL;
 		int8_t _pin = -1;
 		uint16_t _brightnessTarget = 0;
-		uint16_t _oldBrightnessTarget = 0;
+		uint16_t _maxBrightness = 0;
 		uint16_t _actualBrightness = 0;
 		uint16_t _brightnessIncrement = 0;
 		uint16_t _dimmingTime = 0;
 		uint32_t _engineTimer;
 		bool _stripeIsSwitching = false;
+		bool _toggleEnabled = false;
 #if defined(ESP8266)
 	uint8_t _pwmResolution = 8;
     uint16_t _pwmRange = 1023;
@@ -48,6 +48,11 @@ class LedDimming
 		 */
 		uint16_t _percToAnalogWrite(uint8_t Perc);
 		void _writeDebugMsg(String Msg);	
+		/* @brief Abilita  o disabilita il toggle dello stato del led se non sta dimmerando
+		 * 
+		 * @param bool Fast 
+		 */
+		void _toggle();
 
 	public:
 		const uint8_t MAX_BRIGHTNESS = 100; // Massima luminosità percentuale
@@ -76,14 +81,10 @@ class LedDimming
 		 * @param stripe_status NewStatus 
 		 * @param bool Fast 
 		 */
-		void setStatus(stripe_status NewStatus, bool Fast = FAST_SWITCH_DISABLED);
+		void setStatus(stripe_status NewStatus);
 
-		/**
-		 * @brief Inverte lo stato del led se non sta dimmerando
-		 * 
-		 * @param bool Fast 
-		 */
-		void toggleStatus(bool Fast = FAST_SWITCH_DISABLED);
+		void toggle(bool Enable);
+		 
 
 		/**
 		 * @brief Restituisce lo stato attuale della striscia
@@ -105,7 +106,7 @@ class LedDimming
 		 * @param uint8_t NewBrightness 
 		 * @param bool Fast
 		 */
-		void setBrightness(uint8_t NewBrightnessPercent, bool Fast = FAST_SWITCH_DISABLED);
+		void setBrightness(uint8_t NewBrightnessPercent);
 
 		/**
 		 * @brief Esegue il motore per la gestione del dimming e del cambio stato

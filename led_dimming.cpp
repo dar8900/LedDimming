@@ -6,10 +6,6 @@ void LedDimming::_writeDebugMsg(String Msg)
 #ifdef DEBUG_TIME
 	if(Msg != "")
 	{
-		if(_ledStripeName){
-			Serial.print(_ledStripeName);
-			Serial.print("\t");
-		}
 		Serial.println(Msg);
 	}
 #endif	
@@ -116,51 +112,62 @@ void LedDimming::setEngineCycle(uint16_t NewCyleTime)
 
 void LedDimming::setDimmingTime(uint16_t Time)
 {
-	if((Time <= _pwmRange * _DIMMING_CYCLE && Time >= _DIMMING_CYCLE) || 
-		Time == NO_DIMMING)
+	if((Time <= _pwmRange * _DIMMING_CYCLE && Time >= 0))
 	{
+		if(Time == 0){
+			Time = _DIMMING_CYCLE;
+		}
 		_dimmingTime = Time;
-		if(_dimmingTime != NO_DIMMING)
+		if(_dimmingTime != 0)
 		{
 			_brightnessIncrement = _pwmRange / (_dimmingTime / _DIMMING_CYCLE);
-			_writeDebugMsg("_brightnessIncrement = " + String(_brightnessIncrement));
+			_writeDebugMsg("setDimmingTIme -> _brightnessIncrement = " + String(_brightnessIncrement));
 		}
 	}
 }
 
-void LedDimming::toggleStatus(bool Fast)
+
+
+void LedDimming::_toggle()
 {
-	if(!_stripeIsSwitching && _brightnessTarget == _actualBrightness){
-		_writeDebugMsg("Toggle status");
+	if(!_stripeIsSwitching)
+	{
+		_writeDebugMsg("_toggle -> ActualBrightness: " + String(_actualBrightness));
 		if(_brightnessTarget > 0){
-			setStatus(off_status, Fast);
+			_writeDebugMsg("_toggle -> Toggle to OFF");
+			setStatus(off_status);
 		} else {
-			setStatus(on_status, Fast);
+			_writeDebugMsg("_toggle -> Toggle to ON");
+			setStatus(on_status);
 		}
 	}
 }
 
-void LedDimming::setStatus(stripe_status NewStatus, bool Fast)
+
+void LedDimming::toggle(bool Enable)
+{
+	_toggleEnabled = Enable;
+}
+
+
+void LedDimming::setStatus(stripe_status NewStatus)
 {
 	if(NewStatus == off_status)
 	{
-		_actualBrightness = 0;
+		_brightnessTarget = 0;
 	}
 	else
 	{
-		_actualBrightness = _brightnessTarget;
+		_brightnessTarget = _maxBrightness;
 	}
-	if(Fast == FAST_SWITCH_ENABLED)
-	{
-		analogWrite(_pin, _actualBrightness);
-		_brightnessTarget = _actualBrightness;
-		_stripeIsSwitching = false;
-	}
-
+	_writeDebugMsg("setStatus -> _brightnessTarget: " + String(_brightnessTarget));
 }
 
 LedDimming::stripe_status LedDimming::getStatus()
 {
+	if(!_stripeIsSwitching){
+		return _brightnessTarget > 0 ? on_status : off_status;
+	}
 	return _actualBrightness > 0 ? on_status : off_status;
 }
 
@@ -169,20 +176,13 @@ bool LedDimming::ledSwitching()
 	return _stripeIsSwitching;
 }
 
-void LedDimming::setBrightness(uint8_t NewBrightnessPerc, bool Fast)
+void LedDimming::setBrightness(uint8_t NewBrightnessPerc)
 {
 	uint16_t AnalogBright = _percToAnalogWrite(NewBrightnessPerc);
-	if(AnalogBright != _brightnessTarget && NewBrightnessPerc <= MAX_BRIGHTNESS)
+	if(AnalogBright != _maxBrightness && NewBrightnessPerc <= MAX_BRIGHTNESS)
 	{
-		_brightnessTarget = AnalogBright;
-		if(Fast)
-		{
-			if(NewBrightnessPerc == 0){
-				setStatus(off_status, Fast);
-			} else {
-				setStatus(on_status, Fast);
-			}
-		}
+		_writeDebugMsg("setBrightness -> brightnessTarget to: " + String(AnalogBright));
+		_maxBrightness = AnalogBright;
 	}
 }
 
@@ -232,41 +232,43 @@ void LedDimming::ledStripeEngine()
 		int16_t BrightnessDelta = _actualBrightness - _brightnessTarget;
 		if(BrightnessDelta != 0)
 		{
-			if(_dimmingTime == NO_DIMMING){
-				setStatus(getStatus(), FAST_SWITCH_ENABLED);
-			}
-			else
+			if(BrightnessDelta > 0)
 			{
-				if(BrightnessDelta > 0)
+				if(BrightnessDelta > _brightnessIncrement)
 				{
-					if(BrightnessDelta > _brightnessIncrement)
-					{
-						_actualBrightness -= _brightnessIncrement;
-						_stripeIsSwitching = true;
-						_writeDebugMsg("Brightness DECREMENT");
-					}
-					else
-					{
-						_actualBrightness = _brightnessTarget;
-						_stripeIsSwitching = false;
-					}
+					_actualBrightness -= _brightnessIncrement;
+					_stripeIsSwitching = true;
+					_writeDebugMsg("ledStripeEngine -> Brightness DECREMENT");
 				}
 				else
 				{
-					if(BrightnessDelta < (-1 * _brightnessIncrement))
-					{
-						_actualBrightness += _brightnessIncrement;
-						_stripeIsSwitching = true;
-						_writeDebugMsg("Brightness INCREMENT");
-					}
-					else
-					{
-						_actualBrightness = _brightnessTarget;
-						_stripeIsSwitching = false;
+					_actualBrightness = _brightnessTarget;
+					_stripeIsSwitching = false;
+					if(_toggleEnabled){
+						_writeDebugMsg("ledStripeEngine -> Toggle dopo ultimo decremento");
+						_toggle();
 					}
 				}
-				analogWrite(_pin, _actualBrightness);
 			}
+			else
+			{
+				if(BrightnessDelta < (-1 * _brightnessIncrement))
+				{
+					_actualBrightness += _brightnessIncrement;
+					_stripeIsSwitching = true;
+					_writeDebugMsg("ledStripeEngine -> Brightness INCREMENT");
+				}
+				else
+				{
+					_actualBrightness = _brightnessTarget;
+					_stripeIsSwitching = false;
+					if(_toggleEnabled){
+						_writeDebugMsg("ledStripeEngine -> Toggle dopo ultimo incremento");
+						_toggle();
+					}
+				}
+			}
+			analogWrite(_pin, _actualBrightness);
 		}
 	}
 }
