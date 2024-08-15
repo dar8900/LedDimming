@@ -130,22 +130,22 @@ void LedDimming::setDimmingTime(uint16_t Time)
 
 void LedDimming::_toggle()
 {
-	if(!_stripeIsSwitching)
-	{
-		_writeDebugMsg("_toggle -> ActualBrightness: " + String(_actualBrightness));
-		if(_brightnessTarget > 0){
-			_writeDebugMsg("_toggle -> Toggle to OFF");
-			setStatus(off_status);
-		} else {
-			_writeDebugMsg("_toggle -> Toggle to ON");
-			setStatus(on_status);
-		}
+	_writeDebugMsg("_toggle -> ActualBrightness: " + String(_actualBrightness) + " _brightnessTarget: " + String(_brightnessTarget));
+	if(_actualBrightness > 0){
+		_writeDebugMsg("_toggle -> Toggle to OFF");
+		setStatus(off_status);
+	} else {
+		_writeDebugMsg("_toggle -> Toggle to ON");
+		setStatus(on_status);
 	}
 }
 
 
 void LedDimming::toggle(bool Enable)
 {
+	if(!_toggleEnabled && Enable){
+		_toggle();
+	}
 	_toggleEnabled = Enable;
 }
 
