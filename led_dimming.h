@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-#define DEBUG_TIME
+// #define DEBUG_TIME
 
 #define TOGGLE_ENABLED			true
 #define TOGGLE_DISABLED			!TOGGLE_ENABLED
